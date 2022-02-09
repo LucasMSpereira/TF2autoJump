@@ -1,2 +1,2 @@
 # TF2autoJump
- Deterministic automatic rocket jumping in Team Fortress 2
+ Deterministic automatic rocket jumping in the first-person shooter game Team Fortress 2
