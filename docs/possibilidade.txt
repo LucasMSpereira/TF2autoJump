@@ -1,9 +1,0 @@
-possibilidade
-
-	alguma técnica é capaz de lidar com o jump
-
-capacidade de JSGs
-
-	Δ(x,y,z): jumps têm limite teórico de distâncias em cada eixo
-	velocidade: taxa de giro de strafe é limitada por velocidade horizontal resultante
-	superfícies: jumps têm seus pré-requisitos de disponibilidade de superfícies
