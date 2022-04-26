@@ -14,7 +14,7 @@ function readMap(mapFile)
     numberLines = 5000
     plane = Array{Array{Tuple{Vararg{Float64, 3}}}}(undef, numberLines)
     for line in 1:length(fileContent)
-      line % 8000 == 0 && println("line $line")
+      line % 10000 == 0 && println("line $line")
       if length(fileContent[line]) > 8 && fileContent[line][5:9] == "plane"
         # Example of line of interest: "plane" "(5167 710 2720) (5167 710 1808) (5167 702 1808)"
         words = split(fileContent[line])
@@ -39,7 +39,6 @@ function readMap(mapFile)
         end
       end
     end
-    println(p)
   end
 
   plane = plane[1:p-1]
@@ -65,18 +64,20 @@ function hexFromPlanes(planesMat)
 
   points = Array{Any}(undef, (8,size(planesMat,2)) ) # each column stores unique points from a hexahedron
   base = Array{Any}(undef, (4,size(planesMat,2)) ) # each column stores points with minimum z coordinate
-  hexas = Array{Any}(undef, size(planesMat,2))
+  grid = CartesianGrid(10,10,10)
+  hexas2 = view(grid, 1:10) |> collect
+  hexas = Array{typeof(hexas2[1])}(undef, size(planesMat,2))
 
   # planeMat[i,j] -> vector -> 3 tuples -> 3 floats/tuple
   for hex in 1:size(planesMat,2)
     # extract the 8 points needed for each hexahedron
-    points[:,hex] .= Meshes.Point.(unique(collect(Iterators.flatten(planesMat[:,hex]))))
+    points[:,hex] .= Meshes.Point3.(unique(collect(Iterators.flatten(planesMat[:,hex]))))
     # z coordinates of extracted points
     # zCoords = [points[i][3] for i in 1:length(points)]
     # points with lowest z coordinate (length = 4)
     # base = points[findall(x->x==minimum(zCoords), points)]
     # build hexahedron struct
-    hexas[hex] = Meshes.Hexahedron(points[:,hex]...)
+    hexas[hex] = Meshes.Hexahedron([points[:,hex]...])
   end
 
   return points, hexas
@@ -98,30 +99,37 @@ function pointsToCubes(points)
   return [SolidModeling.cube(center[hex], edges[hex]...) for hex in keys(center)]
 end
 
+struct BSPdata
+  ID::Int
+  node::Any
+end
+# Obtain binary space partition (BSP) from SolidModeling.node recursive structure
 function BSPfromNodes(nodes)
   
   g = SimpleGraph(1)
   nodeID = 1
-  IDs = []
+  # IDs = []
+  BSP = Array{Any}(undef, 1)
   function recGraph(nd, ndID)
-    # length(IDs) > 0 && @show length(IDs) IDs[end]
     nodeID += 1
     if nd.front !== nothing
-      IDs = vcat(IDs, nodeID)
+      # IDs = vcat(IDs, nodeID)
+      BSP = vcat(BSP, BSPdata(nodeID, nd))
       add_vertex!(g)
       add_edge!(g, nodeID, ndID)
       recGraph(nd.front, nodeID)
     end
     if nd.back !== nothing
-      IDs = vcat(IDs, nodeID)
+      # IDs = vcat(IDs, nodeID)
+      BSP = vcat(BSP, BSPdata(nodeID, nd))
       add_vertex!(g)
       add_edge!(g, nodeID, ndID)
       recGraph(nd.back, nodeID)
     end
   end
   recGraph(nodes, nodeID)
-  [println(i, "   ", g.fadjlist[i]) for i in 1:6]
-  [println(i, "   ", IDs[i]) for i in 1:6]
-  return g
+  # [println(i, "   ", g.fadjlist[i]) for i in 1:6]
+  # [println(i, "   ", IDs[i]) for i in 1:6]
+  return g, BSP
 
 end

@@ -6,28 +6,9 @@ import Meshes, MeshViz
 include("./utils.jl")
 include("./SolidModeling.jl/src/SolidModeling.jl")
 
-#
-  # p1 = Meshes.Point(-128, 0, 0)
-  # p2 = Meshes.Point(-128, 32, 0)
-  # p3 = Meshes.Point(128, 32, 0)
-  # p4 = Meshes.Point(128, 0, 0)
-  # p5 = Meshes.Point(-128, 0, 128)
-  # p6 = Meshes.Point(-128, 32, 128)
-  # p7 = Meshes.Point(128, 32, 128)
-  # p8 = Meshes.Point(128, 0, 128)
-
-  # points1 = [p1, p2, p3, p4, p5, p6, p7, p8]
-
-  # hexa = Meshes.Hexahedron(points1...)
-
-  # display(MeshViz.viz(hexa))
-  # Meshes.measure(hexa)
-
-#
-
-
-# List of planes. Each plane is defined by three tuples{Float,3}
-# Each tuple contains the coordinates of a vertex that defines the respective plane
+# planes: List of planes. Each plane is defined by three tuples{Float,3}
+  # Each tuple contains the coordinates of a vertex that defines the respective plane
+# planesMat: 6 x number_of_hexahedrons matrix. Each column contains the 6 planes used to define each hexahedron
 @time planes, planesMat = readMap("./vmf/jump_beef_d.vmf")
 
 # List of hexahedrons 
@@ -48,13 +29,9 @@ polygons = SolidModeling.toPolygons(cubes[1])
 );
 
 # Build binary space partition (BSP) graph from node structure
-@time BSP = BSPfromNodes(nodes)
+@time graph, BSPgeom = BSPfromNodes(nodes)
 
-@time for i in 1:20000
-  s = rand(1:12_000)
-  t = rand(1:12_000)
-  print(s, "   ", t, " ")
-  @time path = a_star(BSP, s, t)
-end
-# Define hexahedron with 8 points obtained
-# display(MeshViz.viz(hexas[1]))
+@time path = a_star(graph, rand(1:length(graph.fadjlist),2)...);
+
+k = 135
+@time display(MeshViz.viz(hexas[1:end-k]; color = 1:length(hexas)-k))
