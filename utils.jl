@@ -58,21 +58,17 @@ They are reordered according to the vtk convention.
 And finally output a list of these hexahedrons.
 """
 function hexFromPlanes(planesMat)
-  points = Array{Any}(undef, (8,size(planesMat,2)) ) # each column stores unique points from a hexahedron
-  base = Array{Any}(undef, (4,size(planesMat,2)) ) # each column stores points with minimum z coordinate
-  grid = CartesianGrid(10,10,10)
-  hexas2 = view(grid, 1:10) |> collect
-  hexas = Array{typeof(hexas2[1])}(undef, size(planesMat,2))
+  points = Array{Any}(undef, (8, size(planesMat, 2)) ) # each column stores unique points from a hexahedron
+  hexas = Array{Any}(undef, size(planesMat, 2))
   # planeMat[i,j] -> vector -> 3 tuples -> 3 floats/tuple
-  for hex in 1:size(planesMat,2)
-    # extract the 8 points needed for each hexahedron
-    points[:,hex] .= Meshes.Point.(unique(collect(Iterators.flatten(planesMat[:,hex]))))
-    # z coordinates of extracted points
-    # zCoords = [points[i][3] for i in 1:length(points)]
-    # points with lowest z coordinate (length = 4)
-    # base = points[findall(x->x==minimum(zCoords), points)]
-    # build hexahedron struct
-    hexas[hex] = Meshes.Hexahedron((points[:,hex]...))
+  for hex in 1:size(planesMat, 2)
+    # 8 points needed for each hexahedron
+    points[:, hex] .= planesMat[:, hex] |> Iterators.flatten |> unique .|> Point
+    # get origin and range for GeometryBasics.Rect3d hexahedron
+    coordMat = hcat(points[:, hex]...)
+    ranges = extrema(coordMat; dims = 2) .|> collect .|> diff .|> only .|> abs |> vec
+    origin = minimum(coordMat; dims = 2) |> vec
+    hexas[hex] = Rect3d(origin, ranges)
   end
   return points, hexas
 end

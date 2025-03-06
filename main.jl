@@ -1,4 +1,4 @@
-using Meshes, Graphs, Statistics, StaticArraysCore, GLMakie, Pkg, GeometryBasics
+using Graphs, Statistics, StaticArraysCore, GLMakie, Pkg, GeometryBasics
 
 include("./utils.jl")
 include("./SolidModeling.jl/src/SolidModeling.jl")
