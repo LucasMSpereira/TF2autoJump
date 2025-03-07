@@ -9,11 +9,6 @@ myenv()
 # planesMat: 6 x number_of_hexahedrons matrix. Each column contains the 6 planes used to define each hexahedron
 @time planes, planesMat = readMap("./vmf/jump_beef_d.vmf")
 @time points, hexas = hexFromPlanes(planesMat) # List of hexahedrons
-@time mes = map(permutations(hexas[239].vertices)) do per
-  (StaticArraysCore.SVector{8}(per) |> Hexahedron |> measure).val
-end
-statsum(mes)
-hist(mes)
 # Get list of SolidModeling.cubes to build BSP tree
 @time cubes = pointsToCubes(points)
 # Transform list of solids/polyhedra (typeof(cubes[i]) = SolidModeling.cube)
